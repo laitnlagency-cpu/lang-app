@@ -7,7 +7,6 @@ import Link from 'next/link';
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
-  const [subscription, setSubscription] = useState<any>(null);
   const [preferences, setPreferences] = useState<any>(null);
   const [progress, setProgress] = useState<any>({});
   const [loading, setLoading] = useState(true);
@@ -21,14 +20,6 @@ export default function Dashboard() {
         return;
       }
       setUser(session.user);
-
-      // Obtener suscripción
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
-      setSubscription(sub);
 
       // Obtener preferencias
       const { data: prefs } = await supabase
@@ -49,16 +40,6 @@ export default function Dashboard() {
     };
     getData();
   }, [router]);
-
-  const canAccess = (lessonId: number): boolean => {
-    return lessonId <= 3 || subscription?.active;
-  };
-
-  const handleLessonClick = (id: number) => {
-    if (canAccess(id)) {
-      router.push(`/lesson/${id}`);
-    }
-  };
 
   const learningLang = preferences?.learning_language as LanguageCode || 'en';
   const baseLang = preferences?.base_language as LanguageCode || 'es';
@@ -142,44 +123,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Premium Banner */}
-      {!subscription?.active && (
-        <div style={{
-          background: 'linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%)',
-          border: '2px solid #fcd34d',
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '2rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <div>
-            <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#92400e', fontSize: '1rem' }}>
-              📚 Tienes 3 lecciones gratis
-            </p>
-            <p style={{ margin: 0, color: '#78350f', fontSize: '0.875rem' }}>
-              Suscríbete a Premium para acceder a todas las lecciones y aprovechar al máximo tu aprendizaje
-            </p>
-          </div>
-          <Link href="/payment">
-            <button style={{
-              padding: '0.75rem 1.5rem',
-              background: '#f59e0b',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 600,
-              whiteSpace: 'nowrap',
-              marginLeft: '1rem',
-            }}>
-              Suscribirse
-            </button>
-          </Link>
-        </div>
-      )}
-
       {/* Lecciones Grid */}
       <div style={{
         display: 'grid',
@@ -187,34 +130,28 @@ export default function Dashboard() {
         gap: '1.5rem',
       }}>
         {lessons.map((lesson: any) => {
-          const isLocked = !canAccess(lesson.id);
           const isCompleted = progress[lesson.id]?.completed;
 
           return (
             <div
               key={lesson.id}
-              onClick={() => handleLessonClick(lesson.id)}
+              onClick={() => router.push(`/lesson/${lesson.id}`)}
               style={{
                 background: '#fff',
                 border: isCompleted ? '2px solid #10b981' : '1px solid #d1d5db',
                 borderRadius: '12px',
                 padding: '1.5rem',
-                cursor: isLocked ? 'not-allowed' : 'pointer',
-                opacity: isLocked ? 0.6 : 1,
+                cursor: 'pointer',
                 transition: 'all 0.2s',
                 boxShadow: isCompleted ? '0 4px 12px rgba(16, 185, 129, 0.15)' : '0 1px 3px rgba(0,0,0,0.08)',
               }}
               onMouseEnter={(e) => {
-                if (!isLocked) {
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                }
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
               }}
               onMouseLeave={(e) => {
-                if (!isLocked) {
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }
+                e.currentTarget.style.boxShadow = isCompleted ? '0 4px 12px rgba(16, 185, 129, 0.15)' : '0 1px 3px rgba(0,0,0,0.08)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
               <div style={{
@@ -261,12 +198,6 @@ export default function Dashboard() {
                 }}>
                   {isCompleted ? '✓ Completada' : 'No iniciada'}
                 </div>
-
-                {isLocked && (
-                  <div style={{ fontSize: '1rem', color: '#dc2626' }}>
-                    🔒
-                  </div>
-                )}
               </div>
             </div>
           );
