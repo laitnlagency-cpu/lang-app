@@ -8,7 +8,7 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, messages, language, lessonId } = await request.json()
+    const { messages, language } = await request.json()
 
     const systemPrompt = AI_SYSTEM_PROMPTS[language as LanguageCode] || AI_SYSTEM_PROMPTS['en']
 
