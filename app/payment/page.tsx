@@ -1,15 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
 export default function Payment() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -23,33 +21,6 @@ export default function Payment() {
     };
     getUser();
   }, [router]);
-
-  const handleCheckout = async () => {
-    setProcessing(true);
-    try {
-      const response = await fetch('/api/stripe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'create-checkout',
-          userId: user.id,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al procesar el pago');
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const canceled = searchParams.get('canceled');
-  const success = searchParams.get('success');
 
   if (loading) {
     return (
@@ -90,34 +61,8 @@ export default function Payment() {
           </button>
         </Link>
 
-        {canceled && (
-          <div style={{
-            padding: '1rem',
-            background: '#fee2e2',
-            border: '1px solid #fecaca',
-            borderRadius: '8px',
-            color: '#dc2626',
-            marginBottom: '2rem',
-          }}>
-            El pago fue cancelado
-          </div>
-        )}
-
-        {success && (
-          <div style={{
-            padding: '1rem',
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            color: '#059669',
-            marginBottom: '2rem',
-          }}>
-            ¡Gracias por tu suscripción!
-          </div>
-        )}
-
         <h1 style={{ fontSize: '2rem', color: '#1e3a1f', marginBottom: '2rem' }}>
-          💎 Premium
+          💎 Premium (Próximamente)
         </h1>
 
         <div style={{
@@ -145,22 +90,21 @@ export default function Payment() {
           </ul>
 
           <button
-            onClick={handleCheckout}
-            disabled={processing}
+            disabled
             style={{
               width: '100%',
               padding: '1rem',
-              background: '#0369a1',
+              background: '#9ca3af',
               color: '#fff',
               fontSize: '1.125rem',
               fontWeight: 600,
               border: 'none',
               borderRadius: '8px',
-              cursor: processing ? 'not-allowed' : 'pointer',
-              opacity: processing ? 0.7 : 1,
+              cursor: 'not-allowed',
+              opacity: 0.7,
             }}
           >
-            {processing ? 'Procesando...' : 'Suscribirse Ahora'}
+            Disponible pronto
           </button>
         </div>
 
@@ -172,10 +116,10 @@ export default function Payment() {
           color: '#059669',
         }}>
           <p style={{ margin: 0, fontWeight: 600, marginBottom: '0.75rem' }}>
-            💚 Prueba gratis
+            💚 Acceso gratuito
           </p>
           <p style={{ margin: 0, fontSize: '0.95rem' }}>
-            Tienes acceso a 3 lecciones gratis. Suscríbete a Premium para desbloquear todas las lecciones y funcionalidades.
+            Por ahora tienes acceso a todas las lecciones sin costo. Las suscripciones estarán disponibles pronto.
           </p>
         </div>
       </div>
