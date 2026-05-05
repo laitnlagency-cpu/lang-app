@@ -106,7 +106,7 @@ export default function Onboarding() {
             {languageOptions.map((lang) => (
               <button
                 key={lang.code}
-                onClick={() => setBaseLanguage(lang.code)}
+                onClick={() => setBaseLanguage(lang.code as LanguageCode)}
                 style={{
                   padding: '1.5rem',
                   background: baseLanguage === lang.code ? '#0369a1' : '#fff',
@@ -142,7 +142,7 @@ export default function Onboarding() {
                 .map((lang) => (
                   <button
                     key={lang.code}
-                    onClick={() => setLearningLanguage(lang.code)}
+                    onClick={() => setLearningLanguage(lang.code as LanguageCode)}
                     style={{
                       padding: '1.5rem',
                       background: learningLanguage === lang.code ? '#059669' : '#fff',
